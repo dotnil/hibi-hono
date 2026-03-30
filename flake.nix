@@ -1,5 +1,5 @@
 {
-  description = "hibi-api";
+  description = "hibi-hono";
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
   outputs = {
