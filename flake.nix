@@ -15,9 +15,7 @@
           pkgs.nodejs_24
         ];
 
-        shellHook = ''
-          export VITE_BACK=http://habits.lcl:5000
-        '';
+        DATABASE_URL = "postgres://postgres:@localhost:5432/hibi";
       };
     });
 }
