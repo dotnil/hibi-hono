@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { saveHabit } from './habits'
 
 const app = new Hono()
 
@@ -9,10 +10,10 @@ app.use('*', cors({
   credentials: true,
 }))
 
-app.post('/tasks', async (context) => {
-  const body = await context.req.json()
-  console.log(body)
-  return context.text('Hello Hono!')
+app.post('/habits', async (context) => {
+  const habitPayload = await context.req.json()
+  const backendHabit = await saveHabit(habitPayload)
+  return context.json(backendHabit)
 })
 
 serve({
