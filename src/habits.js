@@ -4,8 +4,8 @@ const db = postgres(process.env.DATABASE_URL)
 
 export const saveHabit = async habit => {
   const [createdHabit] = await db`
-    INSERT INTO habits (title, status)
-    VALUES (${habit.title}, ${habit.status})
+    INSERT INTO habits (name, status)
+    VALUES (${habit.name}, ${habit.status})
     RETURNING *
   `
   return createdHabit
