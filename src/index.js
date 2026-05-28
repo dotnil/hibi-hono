@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { saveHabit, list } from './habits'
+import { saveHabit, list, remove} from './habits'
 
 const app = new Hono()
 
@@ -24,6 +24,13 @@ app.post('/habits', async (context) => {
   const habitPayload = await context.req.json()
   const backendHabit = await saveHabit(habitPayload)
   return context.json(backendHabit, 201)
+})
+
+app.delete('/habits/:id', async (context) => {
+  const id = context.req.param('id')
+  const deletedHabit = await remove(id)
+
+  return context.json(deletedHabit)
 })
 
 serve({

@@ -11,6 +11,10 @@ export const saveHabit = async habit => {
   return createdHabit
 }
 
+export const list = async () => {
+  return await db`SELECT * FROM habits`
+}
+
 export const remove = async id => {
   const [deleted] = await db`
     DELETE FROM habits
@@ -18,8 +22,4 @@ export const remove = async id => {
     RETURNING *
   `
   return deleted
-}
-
-export const list = async () => {
-  return await db`SELECT * FROM habits`
 }
