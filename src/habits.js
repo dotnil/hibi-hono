@@ -2,7 +2,7 @@ import postgres from 'postgres'
 
 const db = postgres(process.env.DATABASE_URL)
 
-export const saveHabit = async habit => {
+export const create = async habit => {
   const [createdHabit] = await db`
     INSERT INTO habits (name, status)
     VALUES (${habit.name}, ${habit.status})
@@ -13,6 +13,16 @@ export const saveHabit = async habit => {
 
 export const list = async () => {
   return await db`SELECT * FROM habits`
+}
+
+export const update = async (id, name) => {
+  const [updated] = await db`
+    UPDATE habits 
+    SET name = ${name}
+    WHERE id = ${id}
+    RETURNING *
+  `
+  return updated
 }
 
 export const remove = async id => {
