@@ -12,12 +12,15 @@ export const create = async habit => {
 }
 
 export const list = async () => {
-  return await db`SELECT * FROM habits`
+  return await db`
+    SELECT * FROM habits
+    ORDER BY id ASC
+  `
 }
 
-export const update = async (id, name) => {
+export const update = async (id, { name }) => {
   const [updated] = await db`
-    UPDATE habits 
+    UPDATE habits
     SET name = ${name}
     WHERE id = ${id}
     RETURNING *
