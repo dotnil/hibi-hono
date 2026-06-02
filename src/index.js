@@ -2,10 +2,15 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { create as createHabit, list, update, remove} from './habits'
-import { create as createUser } from './users'
+import { create as createUser, authenticateUser } from './users'
 import bcrypt from 'bcrypt'
+import { setCookie } from 'hono/cookie'
+import { SignJWT } from 'jose'
 
 const app = new Hono()
+
+if (!process.env.JWT_SECRET) { throw new Error('JWT_SECRET is required') }
+const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 
 app.use('*', cors({
   origin: 'http://localhost:3000',
@@ -48,19 +53,38 @@ app.delete('/habits/:id', async (context) => {
 // user
 
 app.post('/users', async (context) => {
-  const { email, password } =
-    await context.req.json()
+  const credentials = await context.req.json()
 
-  const password_hash =
-    await bcrypt.hash(password, 10)
+  const user = await createUser(credentials)
 
-  const backendUser =
-    await createUser({
-      email,
-      password_hash,
+  return context.json(user, 201)
+})
+
+app.post('/sessions', async (context) => {
+  const credentials = await context.req.json()
+
+  const user = await authenticateUser(credentials)
+
+  const token = await new SignJWT({
+    userId: user.id,
+  })
+    .setProtectedHeader({
+      alg: 'HS256',
     })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(secret)
 
-  return context.json(backendUser, 201)
+  if (!user) {
+    return context.json(
+      { error: 'Invalid credentials' },
+      401,
+    )
+  }
+
+  return context.json({
+    token,
+  })
 })
 
 serve({
