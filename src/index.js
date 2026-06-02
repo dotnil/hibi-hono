@@ -3,14 +3,13 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { create as createHabit, list, update, remove} from './habits'
 import { create as createUser, authenticateUser } from './users'
-import bcrypt from 'bcrypt'
 import { setCookie } from 'hono/cookie'
 import { SignJWT } from 'jose'
 
-const app = new Hono()
-
 if (!process.env.JWT_SECRET) { throw new Error('JWT_SECRET is required') }
 const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+
+const app = new Hono()
 
 app.use('*', cors({
   origin: 'http://localhost:3000',
@@ -50,9 +49,9 @@ app.delete('/habits/:id', async (context) => {
   return context.json(deletedHabit)
 })
 
-// user
+// users
 
-app.post('/users', async (context) => {
+app.post('/users', async context => {
   const credentials = await context.req.json()
 
   const user = await createUser(credentials)
@@ -60,31 +59,29 @@ app.post('/users', async (context) => {
   return context.json(user, 201)
 })
 
-app.post('/sessions', async (context) => {
+app.post('/sessions', async context => {
   const credentials = await context.req.json()
 
   const user = await authenticateUser(credentials)
 
-  const token = await new SignJWT({
-    userId: user.id,
-  })
-    .setProtectedHeader({
-      alg: 'HS256',
-    })
+  if (!user) {
+    return context.json({ error: 'Invalid credentials' }, 401)
+  }
+
+  const token = await new SignJWT({ userId: user.id })
+    .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
     .sign(secret)
 
-  if (!user) {
-    return context.json(
-      { error: 'Invalid credentials' },
-      401,
-    )
-  }
-
-  return context.json({
-    token,
+  setCookie(context, 'jwt', token, {
+    httpOnly: true,
+    sameSite: 'Lax',
+    secure: false,
+    path: '/',
   })
+
+  return context.json({ ok: true })
 })
 
 serve({

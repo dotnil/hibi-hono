@@ -5,14 +5,8 @@ const db = postgres(process.env.DATABASE_URL)
 
 export const create = async user => {
   const [createdUser] = await db`
-    INSERT INTO users (
-      email,
-      password_hash
-    )
-    VALUES (
-      ${user.email},
-      ${user.password_hash}
-    )
+    INSERT INTO users (email, password_hash)
+    VALUES (${user.email}, ${user.password_hash})
     RETURNING *
   `
 
@@ -29,32 +23,20 @@ export const findByEmail = async email => {
   return user
 }
 
-export const createUser = async ({
-  email,
-  password,
-}) => {
+export const createUser = async ({ email, password }) => {
   const password_hash = await bcrypt.hash(password, 10)
 
-  return await create({
-    email,
-    password_hash,
-  })
+  return create({ email, password_hash })
 }
 
-export const authenticateUser = async ({
-  email,
-  password,
-}) => {
+export const authenticateUser = async ({ email, password }) => {
   const user = await findByEmail(email)
 
   if (!user) {
     return null
   }
 
-  const isValid = await bcrypt.compare(
-    password,
-    user.password_hash,
-  )
+  const isValid = await bcrypt.compare(password, user.password_hash)
 
   if (!isValid) {
     return null
