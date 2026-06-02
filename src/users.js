@@ -1,0 +1,29 @@
+import postgres from 'postgres'
+
+const db = postgres(process.env.DATABASE_URL)
+
+export const create = async user => {
+  const [createdUser] = await db`
+    INSERT INTO users (
+      email,
+      password_hash
+    )
+    VALUES (
+      ${user.email},
+      ${user.password_hash}
+    )
+    RETURNING *
+  `
+
+  return createdUser
+}
+
+export const findByEmail = async email => {
+  const [user] = await db`
+    SELECT *
+    FROM users
+    WHERE email = ${email}
+  `
+
+  return user
+}
