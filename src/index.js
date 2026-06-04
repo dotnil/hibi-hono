@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { create as createHabit, list, update, remove} from './habits'
-import { createUser, authenticateUser } from './users'
+import { createUser, authenticateUser, findById } from './users'
 import { setCookie } from 'hono/cookie'
 import { SignJWT } from 'jose'
 import { getCookie } from 'hono/cookie'
@@ -39,7 +39,7 @@ app.post('/habits', async (context) => {
 
   const backendHabit = await createHabit({
     name: habitPayload.name,
-    status: habitPayload.status,
+    active: habitPayload.active !== undefined ? habitPayload.active : true,
     userId: userId,
   })
 

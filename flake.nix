@@ -13,9 +13,10 @@
       devShell = pkgs.mkShell {
         buildInputs = [
           pkgs.nodejs_24
+          pkgs.dbmate
         ];
 
-        DATABASE_URL = "postgres://postgres:@localhost:5432/hibi";
+        DATABASE_URL = "postgres://postgres:@localhost:5432/hibi?sslmode=disable";
       };
     });
 }
