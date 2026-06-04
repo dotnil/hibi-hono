@@ -23,6 +23,16 @@ export const findByEmail = async email => {
   return user
 }
 
+export const findById = async (userId) => {
+  const [user] = await db`
+    SELECT id, email
+    FROM users
+    WHERE id = ${userId}
+  `
+
+  return user
+}
+
 export const createUser = async ({ email, password }) => {
   const password_hash = await bcrypt.hash(password, 10)
 
@@ -32,15 +42,11 @@ export const createUser = async ({ email, password }) => {
 export const authenticateUser = async ({ email, password }) => {
   const user = await findByEmail(email)
 
-  if (!user) {
-    return null
-  }
+  if (!user) { return null }
 
   const isValid = await bcrypt.compare(password, user.password_hash)
 
-  if (!isValid) {
-    return null
-  }
+  if (!isValid) { return null }
 
   return user
 }

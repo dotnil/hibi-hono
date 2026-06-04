@@ -4,16 +4,17 @@ const db = postgres(process.env.DATABASE_URL)
 
 export const create = async habit => {
   const [createdHabit] = await db`
-    INSERT INTO habits (name, status)
-    VALUES (${habit.name}, ${habit.status})
+    INSERT INTO habits (name, status, user_id)
+    VALUES (${habit.name}, ${habit.status}, ${habit.userId})
     RETURNING *
   `
   return createdHabit
 }
 
-export const list = async () => {
+export const list = async (userId) => {
   return await db`
     SELECT * FROM habits
+    WHERE user_id = ${userId}
     ORDER BY id ASC
   `
 }
