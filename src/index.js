@@ -1,15 +1,12 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+
 import { create as createHabit, list, update, remove} from './habits'
 import { createUser, authenticateUser, findById } from './users'
-import { setCookie } from 'hono/cookie'
-import { SignJWT } from 'jose'
-import { getCookie } from 'hono/cookie'
-import { jwtVerify } from 'jose'
 
-if (!process.env.JWT_SECRET) { throw new Error('JWT_SECRET is required') }
-const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+import { setCookie } from 'hono/cookie'
+import { createToken, getUserIdFromCookie } from './authentication'
 
 const app = new Hono()
 
@@ -21,7 +18,7 @@ app.use('*', cors({
 // habits
 
 app.get('/habits', async (context) => {
-  const userId = await getUserIdFromContext(context)
+  const userId = await getUserIdFromCookie(context)
 
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
@@ -33,7 +30,7 @@ app.get('/habits', async (context) => {
 app.post('/habits', async (context) => {
   const habitPayload = await context.req.json()
 
-  const userId = await getUserIdFromContext(context)
+  const userId = await getUserIdFromCookie(context)
 
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
@@ -78,11 +75,7 @@ app.post('/sessions', async context => {
 
   if (!user) { return context.json({ error: 'Invalid credentials' }, 401) }
 
-  const token = await new SignJWT({ userId: user.id })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('7d')
-    .sign(secret)
+  const token = await createToken(user.id)
 
   setCookie(context, 'jwt', token, {
     httpOnly: true,
@@ -95,7 +88,7 @@ app.post('/sessions', async context => {
 })
 
 app.get('/sessions/current', async (context) => {
-  const userId = await getUserIdFromContext(context)
+  const userId = await getUserIdFromCookie(context)
 
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
@@ -105,19 +98,6 @@ app.get('/sessions/current', async (context) => {
 
   return context.json(user)
 })
-
-const getUserIdFromContext = async (context) => {
-  const token = getCookie(context, 'jwt')
-
-  if (!token) { return null }
-
-  try {
-    const { payload } = await jwtVerify(token, secret)
-    return payload.userId
-  } catch (error) {
-    return null
-  }
-}
 
 serve({
   fetch: app.fetch,
