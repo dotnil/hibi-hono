@@ -3,10 +3,10 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import { create as createHabit, list, update, remove} from './habits'
-import { createUser, authenticateUser, findById } from './users'
+import { findById } from './users'
 
 import { setCookie } from 'hono/cookie'
-import { createToken, getUserIdFromCookie } from './authentication'
+import { createUser, authenticateUser, createToken, getUserIdFromCookie } from './authentication'
 
 const app = new Hono()
 

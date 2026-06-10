@@ -1,5 +1,4 @@
 import postgres from 'postgres'
-import bcrypt from 'bcrypt'
 
 const db = postgres(process.env.DATABASE_URL)
 
@@ -29,24 +28,6 @@ export const findById = async (userId) => {
     FROM users
     WHERE id = ${userId}
   `
-
-  return user
-}
-
-export const createUser = async ({ email, password }) => {
-  const password_hash = await bcrypt.hash(password, 10)
-
-  return create({ email, password_hash })
-}
-
-export const authenticateUser = async ({ email, password }) => {
-  const user = await findByEmail(email)
-
-  if (!user) { return null }
-
-  const isValid = await bcrypt.compare(password, user.password_hash)
-
-  if (!isValid) { return null }
 
   return user
 }
