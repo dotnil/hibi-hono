@@ -24,6 +24,9 @@ export const authenticateUser = async ({ email, password }) => {
 }
 
 export const registerUser = async ({ email, password }) => {
+  const existing = await findByEmail(email)
+  if (existing) return null
+
   const password_hash = await bcrypt.hash(password, 10)
 
   return createUser({ email, password_hash })

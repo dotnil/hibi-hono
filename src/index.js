@@ -76,6 +76,8 @@ app.post('/users', async context => {
 
   const user = await registerUser(credentials)
 
+  if (!user) return context.json({ error: 'Email already exists' }, 409)
+
   return context.json(user, 201)
 })
 
@@ -95,6 +97,17 @@ app.post('/sessions', async context => {
     path: '/',
   })
 
+  return context.json({ ok: true })
+})
+
+app.post('/logout', async (context) => {
+  setCookie(context, 'jwt', '', {
+    httpOnly: true,
+    sameSite: 'Lax',
+    secure: false,
+    path: '/',
+    maxAge: 0,
+  })
   return context.json({ ok: true })
 })
 
