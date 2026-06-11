@@ -6,7 +6,7 @@ export const create = async user => {
   const [createdUser] = await db`
     INSERT INTO users (email, password_hash)
     VALUES (${user.email}, ${user.password_hash})
-    RETURNING *
+    RETURNING id, email
   `
 
   return createdUser
@@ -14,7 +14,7 @@ export const create = async user => {
 
 export const findByEmail = async email => {
   const [user] = await db`
-    SELECT *
+    SELECT id, email, password_hash
     FROM users
     WHERE email = ${email}
   `
