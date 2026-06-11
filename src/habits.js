@@ -1,8 +1,6 @@
-import postgres from 'postgres'
+import { db } from './db'
 
-const db = postgres(process.env.DATABASE_URL)
-
-export const create = async habit => {
+export const createHabit = async habit => {
   const [createdHabit] = await db`
     INSERT INTO habits (name, active, user_id)
     VALUES (${habit.name}, ${habit.active}, ${habit.userId})
@@ -11,7 +9,7 @@ export const create = async habit => {
   return createdHabit
 }
 
-export const list = async (userId) => {
+export const listByUserId = async (userId) => {
   return await db`
     SELECT * FROM habits
     WHERE user_id = ${userId}
@@ -19,20 +17,20 @@ export const list = async (userId) => {
   `
 }
 
-export const update = async (id, { name }) => {
+export const updateHabit = async (id, userId, { name }) => {
   const [updated] = await db`
     UPDATE habits
     SET name = ${name}
-    WHERE id = ${id}
+    WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
   `
   return updated
 }
 
-export const remove = async id => {
+export const removeHabit = async (id, userId) => {
   const [deleted] = await db`
     DELETE FROM habits
-    WHERE id = ${id}
+    WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
   `
   return deleted

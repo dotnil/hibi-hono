@@ -2,13 +2,18 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
-import { create as createHabit, list, update, remove} from './habits'
+import { createHabit, listByUserId, updateHabit, removeHabit } from './habits'
 import { findById } from './users'
 
 import { setCookie } from 'hono/cookie'
-import { createUser, authenticateUser, createToken, getUserIdFromCookie } from './authentication'
+import { registerUser, authenticateUser, createToken, getUserIdFromCookie } from './authentication'
 
 const app = new Hono()
+
+app.onError((err, context) => {
+  console.error(err)
+  return context.json({ error: 'Internal Server Error' }, 500)
+})
 
 app.use('*', cors({
   origin: 'http://localhost:3000',
@@ -21,7 +26,7 @@ app.get('/habits', async (context) => {
   const userId = await getUserIdFromCookie(context)
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
-  const habits = await list(userId)
+  const habits = await listByUserId(userId)
 
   return context.json(habits)
 })
@@ -32,13 +37,13 @@ app.post('/habits', async (context) => {
   const userId = await getUserIdFromCookie(context)
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
-  const backendHabit = await createHabit({
+  const habit = await createHabit({
     name: habitPayload.name,
     active: habitPayload.active !== undefined ? habitPayload.active : true,
     userId: userId,
   })
 
-  return context.json(backendHabit, 201)
+  return context.json(habit, 201)
 })
 
 app.patch('/habits/:id', async (context) => {
@@ -48,7 +53,7 @@ app.patch('/habits/:id', async (context) => {
 
   const id = context.req.param('id')
   const { name } = await context.req.json()
-  const updatedHabit = await update(id, { name })
+  const updatedHabit = await updateHabit(id, userId, { name })
 
   return context.json(updatedHabit)
 })
@@ -59,7 +64,7 @@ app.delete('/habits/:id', async (context) => {
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
   const id = context.req.param('id')
-  const deletedHabit = await remove(id)
+  const deletedHabit = await removeHabit(id, userId)
 
   return context.json(deletedHabit)
 })
@@ -69,7 +74,7 @@ app.delete('/habits/:id', async (context) => {
 app.post('/users', async context => {
   const credentials = await context.req.json()
 
-  const user = await createUser(credentials)
+  const user = await registerUser(credentials)
 
   return context.json(user, 201)
 })

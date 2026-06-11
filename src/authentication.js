@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { getCookie } from 'hono/cookie'
 import bcrypt from 'bcrypt'
-import { create, findByEmail } from './users'
+import { createUser, findByEmail } from './users'
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required')
@@ -23,10 +23,10 @@ export const authenticateUser = async ({ email, password }) => {
   return user
 }
 
-export const createUser = async ({ email, password }) => {
+export const registerUser = async ({ email, password }) => {
   const password_hash = await bcrypt.hash(password, 10)
 
-  return create({ email, password_hash })
+  return createUser({ email, password_hash })
 }
 
 export const createToken = async (userId) => {
@@ -40,7 +40,7 @@ export const createToken = async (userId) => {
 export const getUserIdFromCookie = async (context) => {
   const token = getCookie(context, 'jwt')
 
-  if (!token) return null
+  if (!token)  { return null }
 
   try {
     const { payload } = await jwtVerify(token, secret)
