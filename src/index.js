@@ -19,7 +19,6 @@ app.use('*', cors({
 
 app.get('/habits', async (context) => {
   const userId = await getUserIdFromCookie(context)
-
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
   const habits = await list(userId)
@@ -31,7 +30,6 @@ app.post('/habits', async (context) => {
   const habitPayload = await context.req.json()
 
   const userId = await getUserIdFromCookie(context)
-
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
   const backendHabit = await createHabit({
@@ -44,6 +42,10 @@ app.post('/habits', async (context) => {
 })
 
 app.patch('/habits/:id', async (context) => {
+  const userId = await getUserIdFromCookie(context)
+
+  if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
+
   const id = context.req.param('id')
   const { name } = await context.req.json()
   const updatedHabit = await update(id, { name })
@@ -52,6 +54,10 @@ app.patch('/habits/:id', async (context) => {
 })
 
 app.delete('/habits/:id', async (context) => {
+  const userId = await getUserIdFromCookie(context)
+
+  if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
+
   const id = context.req.param('id')
   const deletedHabit = await remove(id)
 
