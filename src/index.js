@@ -7,6 +7,7 @@ import { findById } from './users'
 
 import { setCookie } from 'hono/cookie'
 import { registerUser, authenticateUser, createToken, getUserIdFromCookie } from './authentication'
+import { getMetricsByUserAndWeek } from './metrics'
 
 const app = new Hono()
 
@@ -121,6 +122,19 @@ app.get('/sessions/current', async (context) => {
   if (!user) { return context.json({ error: 'User not found' }, 404) }
 
   return context.json(user)
+})
+
+app.get('/metrics', async (c) => {
+  const userId = await getUserIdFromCookie(c)
+  if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+
+  const metrics = await getMetricsByUserAndWeek(
+    userId,
+    '2026-06-15',   // старт
+    '2026-06-21'    // конец
+  )
+
+  return c.json(metrics)
 })
 
 serve({
