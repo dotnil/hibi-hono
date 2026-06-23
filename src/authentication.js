@@ -3,8 +3,8 @@ import { getCookie } from 'hono/cookie'
 import bcrypt from 'bcrypt'
 import { createUser, findByEmail } from './users'
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET is required')
+export const ensureSecret = () => {
+  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required')
 }
 
 const secret = new TextEncoder().encode(

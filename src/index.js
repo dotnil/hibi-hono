@@ -6,8 +6,8 @@ import { createHabit, listByUserId, updateHabit, removeHabit } from './habits'
 import { findById } from './users'
 
 import { setCookie } from 'hono/cookie'
-import { registerUser, authenticateUser, createToken, getUserIdFromCookie } from './authentication'
-import { getMetricsByUserAndWeek } from './metrics'
+import { registerUser, authenticateUser, createToken, getUserIdFromCookie, ensureSecret } from './authentication'
+import { getMetricsByUserAndWeek, createMetric } from './metrics'
 
 const app = new Hono()
 
@@ -136,6 +136,27 @@ app.get('/metrics', async (c) => {
 
   return c.json(metrics)
 })
+
+app.post('/metrics', async (c) => {
+  const userId = await getUserIdFromCookie(c)
+
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const body = await c.req.json()
+
+  await createMetric({
+    userId,
+    habitId: body.habit_id,
+    date: body.date,
+    value: body.value,
+  })
+
+  return c.json({}, 201)
+})
+
+ensureSecret()
 
 serve({
   fetch: app.fetch,
