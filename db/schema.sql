@@ -1,7 +1,7 @@
 \restrict dbmate
 
--- Dumped from database version 17.9
--- Dumped by pg_dump version 17.9
+-- Dumped from database version 17.10
+-- Dumped by pg_dump version 17.10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -66,6 +66,38 @@ ALTER SEQUENCE public.habits_id_seq OWNED BY public.habits.id;
 
 
 --
+-- Name: metrics; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.metrics (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    habit_id integer NOT NULL,
+    date date NOT NULL,
+    value boolean NOT NULL
+);
+
+
+--
+-- Name: metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.metrics_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.metrics_id_seq OWNED BY public.metrics.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -112,6 +144,13 @@ ALTER TABLE ONLY public.habits ALTER COLUMN id SET DEFAULT nextval('public.habit
 
 
 --
+-- Name: metrics id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metrics ALTER COLUMN id SET DEFAULT nextval('public.metrics_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -124,6 +163,22 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 ALTER TABLE ONLY public.habits
     ADD CONSTRAINT habits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: metrics metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metrics
+    ADD CONSTRAINT metrics_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: metrics metrics_user_id_habit_id_date_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metrics
+    ADD CONSTRAINT metrics_user_id_habit_id_date_key UNIQUE (user_id, habit_id, date);
 
 
 --
@@ -158,11 +213,41 @@ CREATE INDEX idx_habits_user_id ON public.habits USING btree (user_id);
 
 
 --
+-- Name: idx_metrics_habit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_metrics_habit_id ON public.metrics USING btree (habit_id);
+
+
+--
+-- Name: idx_metrics_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_metrics_user_id ON public.metrics USING btree (user_id);
+
+
+--
 -- Name: habits habits_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.habits
     ADD CONSTRAINT habits_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: metrics metrics_habit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metrics
+    ADD CONSTRAINT metrics_habit_id_fkey FOREIGN KEY (habit_id) REFERENCES public.habits(id) ON DELETE CASCADE;
+
+
+--
+-- Name: metrics metrics_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.metrics
+    ADD CONSTRAINT metrics_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -178,4 +263,5 @@ ALTER TABLE ONLY public.habits
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('20260604163554'),
-    ('20260604164932');
+    ('20260604164932'),
+    ('20260615163508');
