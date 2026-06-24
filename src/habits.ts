@@ -1,4 +1,4 @@
-import { db } from './db'
+import { db } from './db.js'
 
 export const createHabit = async habit => {
   const [createdHabit] = await db`

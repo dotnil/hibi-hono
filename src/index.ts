@@ -2,12 +2,12 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
-import { createHabit, listByUserId, updateHabit, removeHabit } from './habits'
-import { findById } from './users'
+import { createHabit, listByUserId, updateHabit, removeHabit } from './habits.js'
+import { findById } from './users.js'
 
 import { setCookie } from 'hono/cookie'
-import { registerUser, authenticateUser, createToken, getUserIdFromCookie, ensureSecret } from './authentication'
-import { getMetricsByUserAndWeek, createMetric } from './metrics'
+import { registerUser, authenticateUser, createToken, getUserIdFromCookie, ensureSecret } from './authentication.js'
+import { getMetricsByUserAndWeek, createMetric } from './metrics.js'
 
 const app = new Hono()
 

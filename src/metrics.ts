@@ -1,4 +1,4 @@
-import { db } from './db'
+import { db } from './db.js'
 
 export const getMetricsByUserAndWeek = async (userId, startDate, endDate) => {
   return await db`

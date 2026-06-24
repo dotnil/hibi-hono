@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { getCookie } from 'hono/cookie'
 import bcrypt from 'bcrypt'
-import { createUser, findByEmail } from './users'
+import { createUser, findByEmail } from './users.js'
 
 export const ensureSecret = () => {
   if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required')
