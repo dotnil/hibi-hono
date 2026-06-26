@@ -1,5 +1,5 @@
 {
-  description = "hibi-api";
+  description = "hibi-hono";
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
   outputs = {
@@ -11,18 +11,18 @@
       pkgs = import nixpkgs {inherit system;};
     in {
       packages.default = pkgs.buildNpmPackage {
-        name = "hibi-api";
+        name = "hibi-hono";
         src = ./.;
-        npmDepsHash = "sha256-raFZZYXdTMRw6mU5/k7lFZHJo/N6Soml59Q3TiNtdA8=";
+        npmDepsHash = "sha256-W8M3GSM0iq890ru6IMvzlpCHdM7qa0tJvCV5M/XkQJc=";
         nodejs = pkgs.nodejs_24;
         installPhase = ''
-          mkdir -p $out/lib/hibi-api $out/bin
-          cp -r dist node_modules package.json $out/lib/hibi-api/
-          cat > $out/bin/hibi-api <<EOF
+          mkdir -p $out/lib/hibi-hono $out/bin
+          cp -r dist node_modules package.json $out/lib/hibi-hono/
+          cat > $out/bin/hibi-hono <<EOF
           #!${pkgs.runtimeShell}
-          exec ${pkgs.nodejs_24}/bin/node $out/lib/hibi-api/dist/index.js "\$@"
+          exec ${pkgs.nodejs_24}/bin/node $out/lib/hibi-hono/dist/index.js "\$@"
           EOF
-          chmod +x $out/bin/hibi-api
+          chmod +x $out/bin/hibi-hono
         '';
       };
 

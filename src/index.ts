@@ -127,11 +127,17 @@ app.get('/sessions/current', async (context) => {
 app.get('/metrics', async (c) => {
   const userId = await getUserIdFromCookie(c)
   if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+  const start = c.req.query('start')
+  const end = c.req.query('end')
+
+  if (!start || !end) {
+    return c.json({ error: 'Missing start or end' }, 400)
+  }
 
   const metrics = await getMetricsByUserAndWeek(
     userId,
-    '2026-06-15',   // старт
-    '2026-06-21'    // конец
+    start,
+    end
   )
 
   return c.json(metrics)
