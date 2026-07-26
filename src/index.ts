@@ -41,6 +41,8 @@ app.post('/habits', async (context) => {
   const habit = await createHabit({
     name: habitPayload.name,
     active: habitPayload.active !== undefined ? habitPayload.active : true,
+    goalPeriod: habitPayload.goalPeriod,
+    goalTarget: habitPayload.goalTarget,
     userId: userId,
   })
 
@@ -53,8 +55,13 @@ app.patch('/habits/:id', async (context) => {
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
   const id = context.req.param('id')
-  const { name } = await context.req.json()
-  const updatedHabit = await updateHabit(id, userId, { name })
+  const { name, goalPeriod, goalTarget } = await context.req.json()
+
+  const updatedHabit = await updateHabit(id, userId, {
+    name,
+    goalPeriod,
+    goalTarget,
+  })
 
   return context.json(updatedHabit)
 })
