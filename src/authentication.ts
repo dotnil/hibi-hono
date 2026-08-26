@@ -47,9 +47,14 @@ export const getUserIdFromCookie = async (context): Promise<number | null> => {
 
   try {
     const { payload } = await jwtVerify(token, secret)
-    const userId = payload.userId
+    const payloadUserId = payload.userId
+    if (typeof payloadUserId !== 'string' && typeof payloadUserId !== 'number') {
+      return null
+    }
 
-    return typeof userId === 'number' ? userId : null
+    const userId = Number(payloadUserId)
+
+    return Number.isSafeInteger(userId) && userId > 0 ? userId : null
   } catch (error) {
     return null
   }
