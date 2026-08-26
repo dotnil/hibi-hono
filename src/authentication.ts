@@ -40,14 +40,16 @@ export const createToken = async (userId) => {
     .sign(secret)
 }
 
-export const getUserIdFromCookie = async (context) => {
+export const getUserIdFromCookie = async (context): Promise<number | null> => {
   const token = getCookie(context, 'jwt')
 
   if (!token)  { return null }
 
   try {
     const { payload } = await jwtVerify(token, secret)
-    return payload.userId
+    const userId = payload.userId
+
+    return typeof userId === 'number' ? userId : null
   } catch (error) {
     return null
   }
