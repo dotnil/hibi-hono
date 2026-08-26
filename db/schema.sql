@@ -38,10 +38,14 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.habits (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     user_id bigint NOT NULL,
     active boolean DEFAULT true NOT NULL,
-    name text NOT NULL
+    name text NOT NULL,
+    goal_period character varying(10) NOT NULL,
+    goal_target bigint NOT NULL,
+    CONSTRAINT habits_goal_period_check CHECK (((goal_period)::text = ANY ((ARRAY['day'::character varying, 'week'::character varying, 'month'::character varying])::text[]))),
+    CONSTRAINT habits_goal_target_check CHECK ((goal_target > 0))
 );
 
 
@@ -50,7 +54,6 @@ CREATE TABLE public.habits (
 --
 
 CREATE SEQUENCE public.habits_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -72,7 +75,7 @@ ALTER SEQUENCE public.habits_id_seq OWNED BY public.habits.id;
 CREATE TABLE public.metrics (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
-    habit_id integer NOT NULL,
+    habit_id bigint NOT NULL,
     date date NOT NULL,
     value boolean NOT NULL
 );

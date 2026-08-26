@@ -1,4 +1,3 @@
-
 | Action                   | Command                       |
 | ------------------------ | ----------------------------- |
 | Create database          | `dbmate create`               |
