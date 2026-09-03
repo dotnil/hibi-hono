@@ -3,6 +3,7 @@ import { db } from './db.js'
 type HabitInput = {
   name: string
   active: boolean
+  color: string
   goalPeriod: 'day' | 'week' | 'month'
   goalTarget: number
   userId: number
@@ -10,6 +11,7 @@ type HabitInput = {
 
 type HabitUpdate = {
   name: string
+  color: string
   goalPeriod: 'day' | 'week' | 'month'
   goalTarget: number
 }
@@ -19,6 +21,7 @@ export const createHabit = async (habit: HabitInput) => {
     INSERT INTO habits (
       name,
       active,
+      color,
       goal_period,
       goal_target,
       user_id
@@ -26,6 +29,7 @@ export const createHabit = async (habit: HabitInput) => {
     VALUES (
       ${habit.name},
       ${habit.active},
+      ${habit.color},
       ${habit.goalPeriod},
       ${habit.goalTarget},
       ${habit.userId}
@@ -48,12 +52,13 @@ export const listByUserId = async (userId: number) => {
 export const updateHabit = async (
   id: string,
   userId: number,
-  { name, goalPeriod, goalTarget }: HabitUpdate
+  { name, color, goalPeriod, goalTarget }: HabitUpdate
 ) => {
   const [updated] = await db`
     UPDATE habits
     SET
       name = ${name},
+      color = ${color},
       goal_period = ${goalPeriod},
       goal_target = ${goalTarget}
     WHERE id = ${id} AND user_id = ${userId}
