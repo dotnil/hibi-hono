@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS habits (
 
     active BOOLEAN NOT NULL DEFAULT TRUE,
     name TEXT NOT NULL,
+    color TEXT NOT NULL,
     goal_period VARCHAR(10) NOT NULL,
     goal_target BIGINT NOT NULL,
 

@@ -11,6 +11,9 @@ import { getMetricsByUserAndWeek, createMetric } from './metrics.js'
 
 const app = new Hono()
 
+const isHabitColor = (color: unknown): color is string =>
+  typeof color === 'string' && /^#[0-9A-F]{6}$/i.test(color)
+
 app.onError((err, context) => {
   console.error(err)
   return context.json({ error: 'Internal Server Error' }, 500)
@@ -38,9 +41,14 @@ app.post('/habits', async (context) => {
   const userId = await getUserIdFromCookie(context)
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
+  if (!isHabitColor(habitPayload.color)) {
+    return context.json({ error: 'Invalid habit color' }, 400)
+  }
+
   const habit = await createHabit({
     name: habitPayload.name,
     active: habitPayload.active !== undefined ? habitPayload.active : true,
+    color: habitPayload.color,
     goalPeriod: habitPayload.goalPeriod,
     goalTarget: habitPayload.goalTarget,
     userId: userId,
@@ -55,10 +63,15 @@ app.patch('/habits/:id', async (context) => {
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
   const id = context.req.param('id')
-  const { name, goalPeriod, goalTarget } = await context.req.json()
+  const { name, color, goalPeriod, goalTarget } = await context.req.json()
+
+  if (!isHabitColor(color)) {
+    return context.json({ error: 'Invalid habit color' }, 400)
+  }
 
   const updatedHabit = await updateHabit(id, userId, {
     name,
+    color,
     goalPeriod,
     goalTarget,
   })

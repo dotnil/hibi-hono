@@ -42,6 +42,7 @@ CREATE TABLE public.habits (
     user_id bigint NOT NULL,
     active boolean DEFAULT true NOT NULL,
     name text NOT NULL,
+    color text NOT NULL,
     goal_period character varying(10) NOT NULL,
     goal_target bigint NOT NULL,
     CONSTRAINT habits_goal_period_check CHECK (((goal_period)::text = ANY ((ARRAY['day'::character varying, 'week'::character varying, 'month'::character varying])::text[]))),
