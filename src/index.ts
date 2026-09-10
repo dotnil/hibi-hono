@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import { createHabit, listByUserId, updateHabit, removeHabit } from './habits.js'
+import { validateHabitPayload } from './habit-validation.js'
 import { findById } from './users.js'
 
 import { setCookie } from 'hono/cookie'
@@ -10,9 +11,6 @@ import { registerUser, authenticateUser, createToken, getUserIdFromCookie, ensur
 import { getMetricsByUserAndWeek, createMetric } from './metrics.js'
 
 const app = new Hono()
-
-const isHabitColor = (color: unknown): color is string =>
-  typeof color === 'string' && /^#[0-9A-F]{6}$/i.test(color)
 
 app.onError((err, context) => {
   console.error(err)
@@ -36,21 +34,24 @@ app.get('/habits', async (context) => {
 })
 
 app.post('/habits', async (context) => {
-  const habitPayload = await context.req.json()
+  let habitPayload: unknown
+  try {
+    habitPayload = await context.req.json()
+  } catch {
+    return context.json({ error: 'Invalid habit' }, 400)
+  }
 
   const userId = await getUserIdFromCookie(context)
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
-  if (!isHabitColor(habitPayload.color)) {
-    return context.json({ error: 'Invalid habit color' }, 400)
+  const result = validateHabitPayload(habitPayload)
+  if (result.ok === false) {
+    return context.json({ error: result.error }, 400)
   }
 
   const habit = await createHabit({
-    name: habitPayload.name,
-    active: habitPayload.active !== undefined ? habitPayload.active : true,
-    color: habitPayload.color,
-    goalPeriod: habitPayload.goalPeriod,
-    goalTarget: habitPayload.goalTarget,
+    ...result.value,
+    active: true,
     userId: userId,
   })
 
@@ -63,18 +64,19 @@ app.patch('/habits/:id', async (context) => {
   if (!userId) { return context.json({ error: 'Unauthorized' }, 401) }
 
   const id = context.req.param('id')
-  const { name, color, goalPeriod, goalTarget } = await context.req.json()
-
-  if (!isHabitColor(color)) {
-    return context.json({ error: 'Invalid habit color' }, 400)
+  let habitPayload: unknown
+  try {
+    habitPayload = await context.req.json()
+  } catch {
+    return context.json({ error: 'Invalid habit' }, 400)
   }
 
-  const updatedHabit = await updateHabit(id, userId, {
-    name,
-    color,
-    goalPeriod,
-    goalTarget,
-  })
+  const result = validateHabitPayload(habitPayload)
+  if (result.ok === false) {
+    return context.json({ error: result.error }, 400)
+  }
+
+  const updatedHabit = await updateHabit(id, userId, result.value)
 
   return context.json(updatedHabit)
 })
