@@ -3,7 +3,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import { createHabit, listByUserId, updateHabit, removeHabit } from './habits.js'
-import { validateHabitPayload } from './habit-validation.js'
+import { validateCredentials, validateHabitPayload } from './validation.js'
 import { findById } from './users.js'
 
 import { setCookie } from 'hono/cookie'
@@ -95,9 +95,19 @@ app.delete('/habits/:id', async (context) => {
 // users
 
 app.post('/users', async context => {
-  const credentials = await context.req.json()
+  let credentials: unknown
+  try {
+    credentials = await context.req.json()
+  } catch {
+    return context.json({ error: 'Invalid credentials' }, 400)
+  }
 
-  const user = await registerUser(credentials)
+  const result = validateCredentials(credentials)
+  if (result.ok === false) {
+    return context.json({ error: result.error }, 400)
+  }
+
+  const user = await registerUser(result.value)
 
   if (!user) return context.json({ error: 'Email already exists' }, 409)
 
@@ -105,9 +115,19 @@ app.post('/users', async context => {
 })
 
 app.post('/sessions', async context => {
-  const credentials = await context.req.json()
+  let credentials: unknown
+  try {
+    credentials = await context.req.json()
+  } catch {
+    return context.json({ error: 'Invalid credentials' }, 400)
+  }
 
-  const user = await authenticateUser(credentials)
+  const result = validateCredentials(credentials)
+  if (result.ok === false) {
+    return context.json({ error: result.error }, 400)
+  }
+
+  const user = await authenticateUser(result.value)
 
   if (!user) { return context.json({ error: 'Invalid credentials' }, 401) }
 
