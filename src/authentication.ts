@@ -1,24 +1,26 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { getCookie } from 'hono/cookie'
 import bcrypt from 'bcrypt'
-import { createUser, findByEmail } from './users.js'
+import { createUser, findByEmail } from './users.ts'
 
 export const ensureSecret = () => {
   if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required')
 }
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET,
-)
+const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 
 export const authenticateUser = async ({ email, password }) => {
   const user = await findByEmail(email)
 
-  if (!user) { return null }
+  if (!user) {
+    return null
+  }
 
   const isValid = await bcrypt.compare(password, user.password_hash)
 
-  if (!isValid) { return null }
+  if (!isValid) {
+    return null
+  }
 
   return user
 }
@@ -43,7 +45,9 @@ export const createToken = async (userId) => {
 export const getUserIdFromCookie = async (context): Promise<number | null> => {
   const token = getCookie(context, 'jwt')
 
-  if (!token)  { return null }
+  if (!token) {
+    return null
+  }
 
   try {
     const { payload } = await jwtVerify(token, secret)
@@ -55,7 +59,7 @@ export const getUserIdFromCookie = async (context): Promise<number | null> => {
     const userId = Number(payloadUserId)
 
     return Number.isSafeInteger(userId) && userId > 0 ? userId : null
-  } catch (error) {
+  } catch {
     return null
   }
 }

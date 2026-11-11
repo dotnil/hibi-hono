@@ -1,4 +1,4 @@
-import { db } from './db.js'
+import { db } from './db.ts'
 
 export const getMetricsByUserAndWeek = async (userId, startDate, endDate) => {
   return await db`
@@ -11,12 +11,7 @@ export const getMetricsByUserAndWeek = async (userId, startDate, endDate) => {
   `
 }
 
-export const createMetric = async ({
-  userId,
-  habitId,
-  date,
-  value,
-}) => {
+export const createMetric = async ({ userId, habitId, date, value }) => {
   const [metric] = await db`
     INSERT INTO metrics (
       user_id,
