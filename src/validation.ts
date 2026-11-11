@@ -5,9 +5,7 @@ type HabitPayload = {
   goalTarget: number
 }
 
-type HabitValidationResult =
-  | { ok: true, value: HabitPayload }
-  | { ok: false, error: string }
+type HabitValidationResult = { ok: true; value: HabitPayload } | { ok: false; error: string }
 
 export const validateHabitPayload = (payload: unknown): HabitValidationResult => {
   if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
@@ -54,9 +52,7 @@ type Credentials = {
   password: string
 }
 
-type CredentialsValidationResult =
-  | { ok: true, value: Credentials }
-  | { ok: false, error: string }
+type CredentialsValidationResult = { ok: true; value: Credentials } | { ok: false; error: string }
 
 export const validateCredentials = (payload: unknown): CredentialsValidationResult => {
   if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
