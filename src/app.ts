@@ -11,7 +11,7 @@ import {
   authenticateUser,
   createToken,
   getUserIdFromCookie,
-  ensureSecret,
+  ensureJWTSecret,
 } from './authentication.ts'
 import { getMetricsByUserAndWeek, createMetric } from './metrics.ts'
 
@@ -222,4 +222,4 @@ app.post('/metrics', async (c) => {
   return c.json({}, 201)
 })
 
-ensureSecret()
+ensureJWTSecret()
