@@ -65,6 +65,12 @@ export async function createTestApplication() {
     const [{ app }, { db }] = await Promise.all([import('../src/app.ts'), import('../src/db.ts')])
 
     beforeEach(async () => {
+      const [currentDatabase] = await db`SELECT current_database()`
+
+      if (currentDatabase.current_database !== temporaryDatabaseName) {
+        throw new Error('Connected database does not match the temporary test database.')
+      }
+
       await db`TRUNCATE TABLE public.metrics, public.habits, public.users RESTART IDENTITY`
     })
 
