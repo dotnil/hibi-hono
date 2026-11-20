@@ -19,12 +19,14 @@ export const createMetric = async ({ userId, habitId, date, value }) => {
       date,
       value
     )
-    VALUES (
+    SELECT
       ${userId},
-      ${habitId},
+      habits.id,
       ${date},
       ${value}
-    )
+    FROM habits
+    WHERE habits.id = ${habitId}
+      AND habits.user_id = ${userId}
     ON CONFLICT (user_id, habit_id, date)
     DO UPDATE SET value = EXCLUDED.value
     RETURNING *

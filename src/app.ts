@@ -212,12 +212,16 @@ app.post('/metrics', async (c) => {
 
   const body = await c.req.json()
 
-  await createMetric({
+  const metric = await createMetric({
     userId,
     habitId: body.habit_id,
     date: body.date,
     value: body.value,
   })
+
+  if (!metric) {
+    return c.json({ error: 'Habit not found' }, 404)
+  }
 
   return c.json({}, 201)
 })
