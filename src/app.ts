@@ -92,6 +92,10 @@ app.patch('/habits/:id', async (context) => {
 
   const updatedHabit = await updateHabit(id, userId, result.value)
 
+  if (!updatedHabit) {
+    return context.json({ error: 'Habit not found' }, 404)
+  }
+
   return context.json(updatedHabit)
 })
 
@@ -104,6 +108,10 @@ app.delete('/habits/:id', async (context) => {
 
   const id = context.req.param('id')
   const deletedHabit = await removeHabit(id, userId)
+
+  if (!deletedHabit) {
+    return context.json({ error: 'Habit not found' }, 404)
+  }
 
   return context.json(deletedHabit)
 })
@@ -210,7 +218,12 @@ app.post('/metrics', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401)
   }
 
-  const body = await c.req.json()
+  let body
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid metric' }, 400)
+  }
 
   const metric = await createMetric({
     userId,
@@ -223,7 +236,7 @@ app.post('/metrics', async (c) => {
     return c.json({ error: 'Habit not found' }, 404)
   }
 
-  return c.json({}, 201)
+  return c.json({}, 200)
 })
 
 ensureJWTSecret()

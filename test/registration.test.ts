@@ -32,3 +32,25 @@ test('registers a user', async () => {
   assert.notEqual(storedUser.password_hash, password)
   assert.equal(await bcrypt.compare(password, storedUser.password_hash), true)
 })
+
+test('rejects registration with the same email in a different case', async () => {
+  const email = 'duplicate@example.com'
+  const password = 'correct-horse-battery-staple'
+  const firstResponse = await app.request('/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  assert.equal(firstResponse.status, 201)
+
+  const secondResponse = await app.request('/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'DUPLICATE@example.com', password }),
+  })
+  assert.equal(secondResponse.status, 409)
+  assert.deepEqual(await secondResponse.json(), { error: 'Email already exists' })
+
+  const storedUsers = await db`SELECT id FROM users WHERE email = ${email}`
+  assert.equal(storedUsers.length, 1)
+})

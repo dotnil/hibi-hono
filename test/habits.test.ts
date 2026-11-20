@@ -226,3 +226,91 @@ test('deletes a habit for the authenticated user', async () => {
 
   assert.equal(storedHabit, undefined)
 })
+
+test('does not update another user habit', async () => {
+  const { cookie: firstUserCookie } = await registerAndLogin('update-other-first@example.com')
+  const { userId: secondUserId, cookie: secondUserCookie } = await registerAndLogin(
+    'update-other-second@example.com',
+  )
+
+  const createdHabitResponse = await app.request('/habits', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: secondUserCookie },
+    body: JSON.stringify({
+      name: 'Original habit',
+      color: '#DDEA7C',
+      goalPeriod: 'week',
+      goalTarget: 3,
+    }),
+  })
+  const createdHabit = await createdHabitResponse.json()
+
+  assert.equal(createdHabitResponse.status, 201)
+  assert.equal(createdHabit.user_id, secondUserId)
+
+  const updateResponse = await app.request(`/habits/${createdHabit.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Cookie: firstUserCookie },
+    body: JSON.stringify({
+      name: 'Changed habit',
+      color: '#F2A9A0',
+      goalPeriod: 'month',
+      goalTarget: 10,
+    }),
+  })
+
+  const [storedHabit] = await db`
+    SELECT id, user_id, active, name, color, goal_period, goal_target
+    FROM habits
+    WHERE id = ${createdHabit.id}
+  `
+
+  assert.ok(storedHabit)
+  assert.equal(storedHabit.user_id, secondUserId)
+  assert.equal(storedHabit.active, createdHabit.active)
+  assert.equal(storedHabit.name, createdHabit.name)
+  assert.equal(storedHabit.color, createdHabit.color)
+  assert.equal(storedHabit.goal_period, createdHabit.goal_period)
+  assert.equal(storedHabit.goal_target, createdHabit.goal_target)
+  assert.equal(updateResponse.status, 404)
+  assert.deepEqual(await updateResponse.json(), { error: 'Habit not found' })
+})
+
+test('does not delete another user habit', async () => {
+  const { cookie: firstUserCookie } = await registerAndLogin('delete-other-first@example.com')
+  const { userId: secondUserId, cookie: secondUserCookie } = await registerAndLogin(
+    'delete-other-second@example.com',
+  )
+
+  const createdHabitResponse = await app.request('/habits', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: secondUserCookie },
+    body: JSON.stringify({
+      name: 'Original habit',
+      color: '#DDEA7C',
+      goalPeriod: 'week',
+      goalTarget: 3,
+    }),
+  })
+  const createdHabit = await createdHabitResponse.json()
+
+  assert.equal(createdHabitResponse.status, 201)
+  assert.equal(createdHabit.user_id, secondUserId)
+
+  const deleteResponse = await app.request(`/habits/${createdHabit.id}`, {
+    method: 'DELETE',
+    headers: { Cookie: firstUserCookie },
+  })
+
+  const [storedHabit] = await db`
+    SELECT id, user_id
+    FROM habits
+    WHERE id = ${createdHabit.id}
+  `
+
+  assert.ok(storedHabit)
+  assert.equal(storedHabit.id, createdHabit.id)
+  assert.equal(storedHabit.user_id, secondUserId)
+  assert.equal(deleteResponse.status, 404)
+  assert.deepEqual(await deleteResponse.json(), { error: 'Habit not found' })
+})
