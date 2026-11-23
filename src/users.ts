@@ -1,6 +1,6 @@
-import { db } from './db.js'
+import { db } from './db.ts'
 
-export const createUser = async user => {
+export const createUser = async (user) => {
   const [createdUser] = await db`
     INSERT INTO users (email, password_hash)
     VALUES (${user.email}, ${user.password_hash})
@@ -10,7 +10,7 @@ export const createUser = async user => {
   return createdUser
 }
 
-export const findByEmail = async email => {
+export const findByEmail = async (email) => {
   const [user] = await db`
     SELECT id, email, password_hash
     FROM users

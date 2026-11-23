@@ -13,14 +13,14 @@
       packages.default = pkgs.buildNpmPackage {
         name = "hibi-hono";
         src = ./.;
-        npmDepsHash = "sha256-W8M3GSM0iq890ru6IMvzlpCHdM7qa0tJvCV5M/XkQJc=";
+        npmDepsHash = "sha256-B55reyF1w9ciqZKgb+o99zlG6ak393oJ5oesVK81ktQ=";
         nodejs = pkgs.nodejs_24;
         installPhase = ''
           mkdir -p $out/lib/hibi-hono $out/bin
-          cp -r dist node_modules package.json $out/lib/hibi-hono/
+          cp -r src node_modules package.json $out/lib/hibi-hono/
           cat > $out/bin/hibi-hono <<EOF
           #!${pkgs.runtimeShell}
-          exec ${pkgs.nodejs_24}/bin/node $out/lib/hibi-hono/dist/index.js "\$@"
+          exec ${pkgs.nodejs_24}/bin/node $out/lib/hibi-hono/src/index.ts "\$@"
           EOF
           chmod +x $out/bin/hibi-hono
         '';
@@ -30,9 +30,12 @@
         buildInputs = [
           pkgs.nodejs_24
           pkgs.dbmate
+          pkgs.oxfmt
+          pkgs.oxlint
         ];
 
         DATABASE_URL = "postgres://postgres:@localhost:5432/hibi?sslmode=disable";
+        TEST_ADMIN_DATABASE_URL = "postgres://postgres:@localhost:5432/postgres?sslmode=disable";
       };
     });
 }

@@ -1,4 +1,4 @@
-import { db } from './db.js'
+import { db } from './db.ts'
 
 export const getMetricsByUserAndWeek = async (userId, startDate, endDate) => {
   return await db`
@@ -11,12 +11,7 @@ export const getMetricsByUserAndWeek = async (userId, startDate, endDate) => {
   `
 }
 
-export const createMetric = async ({
-  userId,
-  habitId,
-  date,
-  value,
-}) => {
+export const createMetric = async ({ userId, habitId, date, value }) => {
   const [metric] = await db`
     INSERT INTO metrics (
       user_id,
@@ -24,12 +19,14 @@ export const createMetric = async ({
       date,
       value
     )
-    VALUES (
+    SELECT
       ${userId},
-      ${habitId},
+      habits.id,
       ${date},
       ${value}
-    )
+    FROM habits
+    WHERE habits.id = ${habitId}
+      AND habits.user_id = ${userId}
     ON CONFLICT (user_id, habit_id, date)
     DO UPDATE SET value = EXCLUDED.value
     RETURNING *

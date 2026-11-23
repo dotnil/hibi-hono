@@ -1,4 +1,4 @@
-import { db } from './db.js'
+import { db } from './db.ts'
 
 type HabitInput = {
   name: string
@@ -52,7 +52,7 @@ export const listByUserId = async (userId: number) => {
 export const updateHabit = async (
   id: string,
   userId: number,
-  { name, color, goalPeriod, goalTarget }: HabitUpdate
+  { name, color, goalPeriod, goalTarget }: HabitUpdate,
 ) => {
   const [updated] = await db`
     UPDATE habits
